@@ -1,17 +1,6 @@
 <h2 align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?size=22&color=007ACC&center=true&vCenter=true&width=520&lines=Hello!;Welcome+to+my+GitHub+Workspace.;I'm+Nehru+-+Java+%7C+Spring+Boot+Developer" />
+  <img src="https://readme-typing-svg.herokuapp.com?size=22&color=007ACC&center=true&vCenter=true&width=620&lines=Hello!;Welcome+to+my+GitHub+Workspace.;Java+%7C+Spring+Boot+Backend+Development;Secure+%26+Scalable+REST+APIs;Clean+Maintainable+%26+Testable+Code;Continuous+Learning+%26+Improvement" />
 </h2>
-
-<div align="center" style="max-width:680px; margin:auto;">
-  <div style="max-height:90px; overflow-y:auto; padding:6px 0;">
-    <ul style="list-style:none; padding:0; margin:0;">
-      <li>Java & Spring Boot backend development</li>
-      <li>Secure, scalable REST APIs</li>
-      <li>Clean, maintainable, testable code</li>
-      <li>Continuous learning & improvement</li>
-    </ul>
-  </div>
-</div>
 
 <p align="center">
   <img src="https://github-readme-stats.vercel.app/api?username=nehru-ounce&show_icons=true&theme=default" height="155" />

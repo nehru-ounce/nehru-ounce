@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AES-GCM Tool</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #1a202c;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header .icon {
+      font-size: 1.6rem;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .clear-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .output-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      flex: 1;
+    }
+
+    .panel-header {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 50px;
+      max-height: 100px;
+      padding: 10px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 13px;
+      resize: vertical;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    .output-container {
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fafafa;
+      max-height: 600px;
+      min-height: 400px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .output-container.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: 100vh;
+      min-height: 100vh;
+      border-radius: 0;
+      z-index: 9999;
+      margin: 0;
+    }
+
+    .output-container.fullscreen .output-content {
+      padding: 40px;
+    }
+
+    .fullscreen-controls {
+      display: none;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      gap: 10px;
+    }
+
+    .output-container.fullscreen .fullscreen-controls {
+      display: flex;
+    }
+
+    .fullscreen-btn {
+      background: rgba(255, 255, 255, 0.95);
+      color: #1e293b;
+      border: 2px solid #e2e8f0;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fullscreen-btn:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    .output-container.fullscreen.dark-theme .fullscreen-controls .fullscreen-btn {
+      background: rgba(30, 41, 59, 0.95);
+      color: #e2e8f0;
+      border-color: #475569;
+    }
+
+    .output-container.fullscreen.dark-theme .fullscreen-controls .fullscreen-btn:hover {
+      background: #1e293b;
+    }
+
+    .output-container.fullscreen.minimized {
+      width: 400px;
+      height: 60px;
+      top: auto;
+      bottom: 20px;
+      right: 20px;
+      left: auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      max-height: 60px;
+      min-height: 60px;
+    }
+
+    .output-container.fullscreen.minimized .output-wrapper {
+      display: none !important;
+    }
+
+    .output-container.fullscreen.minimized .find-bar {
+      display: none !important;
+    }
+
+    .output-container.fullscreen.minimized .panel-header {
+      display: none !important;
+    }
+
+    .minimized-header {
+      display: none;
+      padding: 18px 20px;
+      background: white;
+      border-bottom: 2px solid #e2e8f0;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+    }
+
+    .output-container.fullscreen.minimized .minimized-header {
+      display: flex;
+    }
+
+    .output-container.fullscreen.minimized.dark-theme .minimized-header {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-bottom-color: #475569;
+    }
+
+    .output-container.fullscreen.minimized .fullscreen-controls {
+      display: none;
+    }
+
+    .output-wrapper {
+      display: flex;
+      width: 100%;
+    }
+
+    .line-numbers {
+      background: #f1f5f9;
+      color: #94a3b8;
+      padding: 16px 12px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      text-align: right;
+      user-select: none;
+      border-right: 2px solid #e2e8f0;
+      min-width: 45px;
+      display: none;
+    }
+
+    .output-content {
+      flex: 1;
+      padding: 16px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      color: #1e293b;
+      min-width: 0;
+    }
+
+    .output-container.dark-theme {
+      background: #1e293b;
+      border-color: #334155;
+    }
+
+    .output-container.dark-theme .line-numbers {
+      background: #0f172a;
+      color: #64748b;
+      border-right-color: #334155;
+    }
+
+    .output-container.dark-theme .output-content {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    .output-container.dark-theme .empty-state {
+      color: #64748b;
+    }
+
+    .output-container.dark-theme .json-key {
+      color: #c084fc;
+    }
+
+    .output-container.dark-theme .json-string {
+      color: #6ee7b7;
+    }
+
+    .output-container.dark-theme .json-number {
+      color: #fca5a5;
+    }
+
+    .output-container.dark-theme .json-boolean {
+      color: #60a5fa;
+    }
+
+    .output-container.dark-theme .json-null {
+      color: #94a3b8;
+    }
+
+    .output-container.dark-theme .json-bracket {
+      color: #cbd5e1;
+    }
+
+    .output-container.dark-theme .success {
+      background: #064e3b;
+      color: #6ee7b7;
+    }
+
+    .output-container.dark-theme .error {
+      background: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .output-content.bold-text {
+      font-weight: 600;
+    }
+
+    .toolbar-separator {
+      width: 1px;
+      height: 20px;
+      background: #cbd5e1;
+      margin: 0 4px;
+    }
+
+    .empty-state {
+      color: #94a3b8;
+      font-style: italic;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .json-key {
+      color: #7c3aed;
+      font-weight: 600;
+    }
+
+    .json-string {
+      color: #059669;
+    }
+
+    .json-number {
+      color: #dc2626;
+    }
+
+    .json-boolean {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .json-null {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .json-bracket {
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .collapsible {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .collapsible::before {
+      content: '▼';
+      position: absolute;
+      left: 0;
+      color: #3b82f6;
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+
+    .collapsible.collapsed::before {
+      transform: rotate(-90deg);
+    }
+
+    .collapsible:hover::before {
+      color: #2563eb;
+    }
+
+    .collapsible-content {
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .collapsible-content.collapsed {
+      display: none;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      background: #f1f5f9;
+      color: #475569;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tool-btn:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .tool-btn.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .find-bar {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .find-bar.active {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .find-input {
+      flex: 1;
+      min-width: 150px;
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .find-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .find-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .find-btn:hover {
+      background: #2563eb;
+    }
+
+    .highlight {
+      background-color: #fef08a;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        max-width: 100%;
+      }
+
+      .header {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .header h1 {
+        justify-content: center;
+        font-size: 1.1rem;
+      }
+
+      .header .icon {
+        font-size: 1.3rem;
+      }
+
+      .clear-btn {
+        width: 100%;
+        padding: 10px;
+      }
+
+      .main-content {
+        gap: 15px;
+      }
+
+      .input-panel, .output-panel {
+        padding: 12px 15px;
+      }
+
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.85rem;
+      }
+
+      textarea {
+        min-height: 45px;
+        max-height: 80px;
+        font-size: 12px;
+        padding: 8px 10px;
+      }
+
+      .toolbar {
+        width: 100%;
+        justify-content: stretch;
+        gap: 4px;
+      }
+
+      .tool-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+        font-size: 10px;
+        padding: 6px 4px;
+        min-width: 60px;
+      }
+
+      .toolbar-separator {
+        display: none;
+      }
+
+      .output-container {
+        max-height: 400px;
+        min-height: 300px;
+      }
+
+      .output-content {
+        font-size: 12px;
+        padding: 12px;
+      }
+
+      .find-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .find-input {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .find-btn {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+
+      .header {
+        padding: 10px 12px;
+        margin-bottom: 10px;
+      }
+
+      .header h1 {
+        font-size: 1rem;
+      }
+
+      .input-panel, .output-panel {
+        padding: 10px 12px;
+        border-radius: 8px;
+      }
+
+      .panel-header {
+        margin-bottom: 8px;
+      }
+
+      textarea {
+        min-height: 40px;
+        max-height: 70px;
+        padding: 8px;
+        font-size: 11px;
+      }
+
+      .toolbar {
+        gap: 6px;
+      }
+
+      .tool-btn {
+        font-size: 10px;
+        padding: 6px 4px;
+      }
+
+      .output-container {
+        max-height: 350px;
+        min-height: 250px;
+        border-radius: 6px;
+      }
+
+      .output-content {
+        font-size: 11px;
+        padding: 10px;
+      }
+
+      .find-bar {
+        padding: 8px;
+      }
+
+      .find-input, .find-btn {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .container {
+        max-width: 95%;
+      }
+
+      .main-content {
+        gap: 15px;
+      }
+
+      .input-panel {
+        padding: 14px 18px;
+      }
+
+      .output-panel {
+        padding: 18px;
+      }
+    }
+
+    @media (min-width: 1400px) {
+      .container {
+        max-width: 1400px;
+      }
+
+      .main-content {
+        gap: 25px;
+      }
+
+      textarea {
+        min-height: 55px;
+        max-height: 120px;
+      }
+
+      .output-container {
+        max-height: 700px;
+        min-height: 500px;
+      }
+    }
+
+    /* Custom scrollbar */
+    .output-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .output-container::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    .output-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .output-container::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><span class="icon">🔐</span> AES-GCM Encrypt & Decrypt</h1>
+      <button class="clear-btn" onclick="clearAll()">🗑️ Clear All</button>
+    </div>
+
+    <div class="main-content">
+      <!-- Input Panel -->
+      <div class="input-panel">
+        <div class="panel-header">Input</div>
+        <textarea id="inputText" placeholder="Paste encrypted data here..."></textarea>
+      </div>
+
+      <!-- Output Panel -->
+      <div class="output-panel">
+        <div class="panel-header">
+          <span>Output</span>
+          <div class="toolbar">
+            <button class="tool-btn" onclick="copyOutput()">📋 Copy</button>
+            <button class="tool-btn" onclick="toggleFind()">🔍 Find</button>
+            <button class="tool-btn" onclick="collapseAll()">📁 Collapse</button>
+            <button class="tool-btn" onclick="expandAll()">📂 Expand</button>
+            <div class="toolbar-separator"></div>
+            <button class="tool-btn" onclick="toggleBold()">𝐁 Bold</button>
+            <button class="tool-btn" onclick="decreaseFontSize()">A- Size</button>
+            <button class="tool-btn" onclick="increaseFontSize()">A+ Size</button>
+            <button class="tool-btn" onclick="toggleTheme()">🌙 Theme</button>
+            <button class="tool-btn" onclick="toggleFullscreen()">⛶ Full</button>
+          </div>
+        </div>
+
+        <div class="find-bar" id="findBar">
+          <input type="text" id="findInput" class="find-input" placeholder="Search...">
+          <button class="find-btn" onclick="findNext()">Next</button>
+          <button class="find-btn" onclick="findPrevious()">Prev</button>
+          <button class="tool-btn" onclick="closeFindBar()">✕</button>
+        </div>
+
+        <div class="output-container" id="outputContainer">
+          <!-- Fullscreen Controls (only visible in fullscreen mode) -->
+          <div class="fullscreen-controls" id="fullscreenControls">
+            <button class="fullscreen-btn" onclick="minimizeFullscreen()">
+              <span>📐</span> Minimize
+            </button>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">
+              <span>✕</span> Exit
+            </button>
+          </div>
+          
+          <div class="minimized-header" onclick="restoreFullscreen()">
+            <span>🔐 AES-GCM Output (Click to restore)</span>
+            <button class="tool-btn" onclick="event.stopPropagation(); toggleFullscreen();" style="margin: 0;">✕</button>
+          </div>
+          <div class="output-wrapper">
+            <div id="lineNumbers" class="line-numbers">1</div>
+            <div id="output" class="output-content">
+              <div class="empty-state">Paste encrypted data to see decrypted output</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ORIGINAL ALGORITHM - PRESERVED EXACTLY AS IT WAS
+    const SECRET_KEY_STRING = "bCmZ8GAUuESJMQpH"; // 128-bit AES key
+    let currentMatches = [];
+    let currentMatchIndex = -1;
+    let isCollapsed = false;
+    let currentFontSize = 13;
+    let isBold = false;
+    let isDarkTheme = false;
+    let isFullscreen = false;
+    let isMinimized = false;
+
+    function getKey() {
+      const keyBytes = new TextEncoder().encode(SECRET_KEY_STRING);
+      return crypto.subtle.importKey("raw", keyBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+    }
+
+    async function encrypt() {
+      const input = document.getElementById('inputText').value.trim();
+      const output = document.getElementById('output');
+      
+      if (!input) {
+        output.innerHTML = '<div class="error">❌ Please enter some text to encrypt</div>';
+        updateLineNumbers();
+        return;
+      }
+
+      try {
+        const key = await getKey();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const data = new TextEncoder().encode(input);
+        const encrypted = await crypto.subtle.encrypt(
+          { name: "AES-GCM", iv },
+          key,
+          data
+        );
+        const combined = new Uint8Array(iv.length + encrypted.byteLength);
+        combined.set(iv, 0);
+        combined.set(new Uint8Array(encrypted), iv.length);
+        const base64 = btoa(String.fromCharCode(...combined));
+        output.innerHTML = `<div class="success">✅ Encryption successful!</div><div class="json-string">"${base64}"</div>`;
+        updateLineNumbers();
+      } catch (e) {
+        output.innerHTML = `<div class="error">❌ Encryption failed: ${e.message}</div>`;
+        updateLineNumbers();
+      }
+    }
+
+    async function decrypt() {
+      let base64Input = document.getElementById('inputText').value.trim();
+      const output = document.getElementById('output');
+      
+      if (!base64Input) {
+        output.innerHTML = '<div class="empty-state">Paste encrypted data to see decrypted output</div>';
+        updateLineNumbers();
+        return;
+      }
+
+      if (base64Input.startsWith('"') && base64Input.endsWith('"')) {
+        base64Input = base64Input.slice(1, -1);
+      }
+
+      try {
+        const encryptedData = Uint8Array.from(atob(base64Input), c => c.charCodeAt(0));
+        const iv = encryptedData.slice(0, 12);
+        const cipherText = encryptedData.slice(12);
+        const key = await getKey();
+        const decryptedBuffer = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv },
+          key,
+          cipherText
+        );
+        const plainText = new TextDecoder().decode(decryptedBuffer);
+        
+        try {
+          const json = JSON.parse(plainText);
+          output.innerHTML = formatJSON(json);
+          updateLineNumbers();
+        } catch {
+          output.innerHTML = escapeHtml(plainText);
+          updateLineNumbers();
+        }
+      } catch (e) {
+        // If decryption fails, treat as regular text
+        output.innerHTML = escapeHtml(base64Input);
+        updateLineNumbers();
+      }
+    }
+
+    function updateLineNumbers() {
+      const output = document.getElementById('output');
+      const lineNumbers = document.getElementById('lineNumbers');
+      
+      // Count the number of lines in the output
+      const text = output.textContent || output.innerText || '';
+      const lines = text.split('\n');
+      const lineCount = lines.length;
+      
+      // Generate line numbers
+      let lineNumbersText = '';
+      for (let i = 1; i <= lineCount; i++) {
+        lineNumbersText += i + '\n';
+      }
+      
+      lineNumbers.textContent = lineNumbersText;
+    }
+
+    function formatJSON(obj, indent = 0) {
+      const indentStr = '  '.repeat(indent);
+      const nextIndentStr = '  '.repeat(indent + 1);
+      
+      if (obj === null) {
+        return '<span class="json-null">null</span>';
+      }
+      
+      if (typeof obj === 'string') {
+        return `<span class="json-string">"${escapeHtml(obj)}"</span>`;
+      }
+      
+      if (typeof obj === 'number') {
+        return `<span class="json-number">${obj}</span>`;
+      }
+      
+      if (typeof obj === 'boolean') {
+        return `<span class="json-boolean">${obj}</span>`;
+      }
+      
+      if (Array.isArray(obj)) {
+        if (obj.length === 0) {
+          return '<span class="json-bracket">[]</span>';
+        }
+        
+        const id = 'collapse_' + Math.random().toString(36).substr(2, 9);
+        let result = `<span class="json-bracket collapsible" onclick="toggleCollapsible('${id}')">[</span>\n`;
+        result += `<div class="collapsible-content" id="${id}">`;
+        
+        obj.forEach((item, index) => {
+          result += nextIndentStr + formatJSON(item, indent + 1);
+          if (index < obj.length - 1) result += ',';
+          result += '\n';
+        });
+        
+        result += '</div>';
+        result += indentStr + '<span class="json-bracket">]</span>';
+        return result;
+      }
+      
+      if (typeof obj === 'object') {
+        const keys = Object.keys(obj);
+        if (keys.length === 0) {
+          return '<span class="json-bracket">{}</span>';
+        }
+        
+        const id = 'collapse_' + Math.random().toString(36).substr(2, 9);
+        let result = `<span class="json-bracket collapsible" onclick="toggleCollapsible('${id}')">{</span>\n`;
+        result += `<div class="collapsible-content" id="${id}">`;
+        
+        keys.forEach((key, index) => {
+          result += nextIndentStr + `<span class="json-key">"${escapeHtml(key)}"</span>: `;
+          result += formatJSON(obj[key], indent + 1);
+          if (index < keys.length - 1) result += ',';
+          result += '\n';
+        });
+        
+        result += '</div>';
+        result += indentStr + '<span class="json-bracket">}</span>';
+        return result;
+      }
+      
+      return escapeHtml(String(obj));
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function toggleCollapsible(id) {
+      const element = document.getElementById(id);
+      const trigger = element.previousElementSibling;
+      
+      if (element.classList.contains('collapsed')) {
+        element.classList.remove('collapsed');
+        trigger.classList.remove('collapsed');
+      } else {
+        element.classList.add('collapsed');
+        trigger.classList.add('collapsed');
+      }
+    }
+
+    function collapseAll() {
+      const output = document.getElementById('output');
+      const collapsibleContents = output.querySelectorAll('.collapsible-content:not(.collapsed)');
+      const triggers = output.querySelectorAll('.collapsible:not(.collapsed)');
+      
+      collapsibleContents.forEach(element => {
+        element.classList.add('collapsed');
+      });
+      
+      triggers.forEach(trigger => {
+        trigger.classList.add('collapsed');
+      });
+    }
+
+    function expandAll() {
+      const output = document.getElementById('output');
+      const collapsibleContents = output.querySelectorAll('.collapsible-content.collapsed');
+      const triggers = output.querySelectorAll('.collapsible.collapsed');
+      
+      collapsibleContents.forEach(element => {
+        element.classList.remove('collapsed');
+      });
+      
+      triggers.forEach(trigger => {
+        trigger.classList.remove('collapsed');
+      });
+    }
+
+    function toggleFind() {
+      const findBar = document.getElementById('findBar');
+      const findInput = document.getElementById('findInput');
+      
+      if (findBar.classList.contains('active')) {
+        closeFindBar();
+      } else {
+        findBar.classList.add('active');
+        findInput.focus();
+      }
+    }
+
+    function closeFindBar() {
+      const findBar = document.getElementById('findBar');
+      const findInput = document.getElementById('findInput');
+      
+      findBar.classList.remove('active');
+      findInput.value = '';
+      clearHighlights();
+    }
+
+    function findNext() {
+      const searchTerm = document.getElementById('findInput').value.toLowerCase();
+      if (!searchTerm) return;
+      
+      if (currentMatches.length === 0) {
+        findMatches(searchTerm);
+      }
+      
+      if (currentMatches.length > 0) {
+        currentMatchIndex = (currentMatchIndex + 1) % currentMatches.length;
+        highlightMatch(currentMatchIndex);
+      }
+    }
+
+    function findPrevious() {
+      const searchTerm = document.getElementById('findInput').value.toLowerCase();
+      if (!searchTerm) return;
+      
+      if (currentMatches.length === 0) {
+        findMatches(searchTerm);
+      }
+      
+      if (currentMatches.length > 0) {
+        currentMatchIndex = currentMatchIndex <= 0 ? currentMatches.length - 1 : currentMatchIndex - 1;
+        highlightMatch(currentMatchIndex);
+      }
+    }
+
+    function findMatches(searchTerm) {
+      const output = document.getElementById('output');
+      const text = output.textContent;
+      
+      currentMatches = [];
+      let index = 0;
+      
+      while ((index = text.toLowerCase().indexOf(searchTerm, index)) !== -1) {
+        currentMatches.push(index);
+        index += searchTerm.length;
+      }
+      
+      currentMatchIndex = -1;
+    }
+
+    function highlightMatch(matchIndex) {
+      const output = document.getElementById('output');
+      const searchTerm = document.getElementById('findInput').value;
+      
+      clearHighlights();
+      
+      if (matchIndex >= 0 && matchIndex < currentMatches.length) {
+        const text = output.textContent;
+        const start = currentMatches[matchIndex];
+        const end = start + searchTerm.length;
+        
+        const beforeMatch = escapeHtml(text.substring(0, start));
+        const match = escapeHtml(text.substring(start, end));
+        const afterMatch = escapeHtml(text.substring(end));
+        
+        const highlightedText = beforeMatch + `<span class="highlight">${match}</span>` + afterMatch;
+        output.innerHTML = highlightedText;
+        
+        const highlightElement = output.querySelector('.highlight');
+        if (highlightElement) {
+          highlightElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    function clearHighlights() {
+      if (document.getElementById('inputText').value.trim()) {
+        decrypt();
+      }
+    }
+
+    function copyOutput() {
+      const output = document.getElementById('output');
+      const text = output.textContent;
+      
+      // Find the copy button
+      const buttons = document.querySelectorAll('.tool-btn');
+      let copyBtn = null;
+      buttons.forEach(btn => {
+        if (btn.textContent.includes('Copy')) {
+          copyBtn = btn;
+        }
+      });
+      
+      navigator.clipboard.writeText(text).then(() => {
+        if (copyBtn) {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = '✓ Copied!';
+          copyBtn.classList.add('active');
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.classList.remove('active');
+          }, 2000);
+        }
+      }).catch(err => {
+        alert('Failed to copy: ' + err.message);
+      });
+    }
+
+    function clearAll() {
+      document.getElementById('inputText').value = '';
+      document.getElementById('output').innerHTML = '<div class="empty-state">Paste encrypted data to see decrypted output</div>';
+      updateLineNumbers();
+      closeFindBar();
+    }
+
+    function toggleFullscreen() {
+      const container = document.getElementById('outputContainer');
+      isFullscreen = !isFullscreen;
+      
+      if (isFullscreen) {
+        container.classList.add('fullscreen');
+        container.classList.remove('minimized');
+        isMinimized = false;
+        document.body.style.overflow = 'hidden';
+      } else {
+        container.classList.remove('fullscreen');
+        container.classList.remove('minimized');
+        isMinimized = false;
+        document.body.style.overflow = '';
+      }
+      
+      // Update button text in toolbar
+      updateFullscreenButton();
+    }
+
+    function updateFullscreenButton() {
+      const buttons = document.querySelectorAll('.tool-btn');
+      buttons.forEach(btn => {
+        if (btn.textContent.includes('Full') || btn.textContent.includes('Exit')) {
+          if (isFullscreen) {
+            btn.textContent = '✕ Exit';
+          } else {
+            btn.textContent = '⛶ Full';
+          }
+        }
+      });
+    }
+
+    function minimizeFullscreen() {
+      const container = document.getElementById('outputContainer');
+      if (isFullscreen && !isMinimized) {
+        container.classList.add('minimized');
+        isMinimized = true;
+      }
+    }
+
+    function restoreFullscreen() {
+      const container = document.getElementById('outputContainer');
+      if (isFullscreen && isMinimized) {
+        container.classList.remove('minimized');
+        isMinimized = false;
+      }
+    }
+
+    function toggleBold() {
+      const output = document.getElementById('output');
+      const buttons = document.querySelectorAll('.tool-btn');
+      let boldBtn = null;
+      buttons.forEach(btn => {
+        if (btn.textContent.includes('Bold')) {
+          boldBtn = btn;
+        }
+      });
+      
+      isBold = !isBold;
+      
+      if (isBold) {
+        output.classList.add('bold-text');
+        if (boldBtn) boldBtn.classList.add('active');
+      } else {
+        output.classList.remove('bold-text');
+        if (boldBtn) boldBtn.classList.remove('active');
+      }
+    }
+
+    function increaseFontSize() {
+      const output = document.getElementById('output');
+      if (currentFontSize < 24) {
+        currentFontSize += 1;
+        output.style.fontSize = currentFontSize + 'px';
+      }
+    }
+
+    function decreaseFontSize() {
+      const output = document.getElementById('output');
+      if (currentFontSize > 10) {
+        currentFontSize -= 1;
+        output.style.fontSize = currentFontSize + 'px';
+      }
+    }
+
+    function toggleTheme() {
+      const container = document.getElementById('outputContainer');
+      const buttons = document.querySelectorAll('.tool-btn');
+      let themeBtn = null;
+      buttons.forEach(btn => {
+        if (btn.textContent.includes('Theme')) {
+          themeBtn = btn;
+        }
+      });
+      
+      isDarkTheme = !isDarkTheme;
+      
+      if (isDarkTheme) {
+        container.classList.add('dark-theme');
+        if (themeBtn) {
+          themeBtn.textContent = '☀️ Theme';
+          themeBtn.classList.add('active');
+        }
+      } else {
+        container.classList.remove('dark-theme');
+        if (themeBtn) {
+          themeBtn.textContent = '🌙 Theme';
+          themeBtn.classList.remove('active');
+        }
+      }
+    }
+
+    // Close fullscreen on ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        toggleFullscreen();
+      }
+    });
+
+    // Event listeners - AUTO DECRYPT ON PASTE
+    document.getElementById("inputText").addEventListener("input", () => {
+      clearTimeout(window.decryptTimeout);
+      window.decryptTimeout = setTimeout(decrypt, 300);
+    });
+
+    document.getElementById("inputText").addEventListener("paste", (e) => {
+      clearTimeout(window.decryptTimeout);
+      setTimeout(() => {
+        decrypt();
+      }, 10);
+    });
+
+    document.getElementById("findInput").addEventListener("input", () => {
+      currentMatches = [];
+      currentMatchIndex = -1;
+      clearHighlights();
+    });
+
+    document.getElementById("findInput").addEventListener("keydown", (e) => {
+      if (e.key === 'Enter') {
+        if (e.shiftKey) {
+          findPrevious();
+        } else {
+          findNext();
+        }
+      }
+      if (e.key === 'Escape') {
+        closeFindBar();
+      }
+    });
+
+    // Initialize
+    updateLineNumbers();
+  </script>
+</body>
+</html>
